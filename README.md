@@ -73,7 +73,7 @@ oc rsh ${PODNAME}
 
 Clone the git repo in the pod, link to the mounted TLS resources and run it:
 
-``
+```bash
 git clone https://github.com/dmartinol/test-fips-email.git
 cd test-fips-email
 rm -rf tls
