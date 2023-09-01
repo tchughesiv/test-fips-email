@@ -24,8 +24,8 @@ Snippet of Keycloak log:
 ## Preliminary steps
 Install the required TLS resources in `tls` folder:
 * cacerts.bcfks: can be copied from the `git@gitlab.cee.redhat.com:service/keycloak.git` repo at `fips-libs/cacerts.bcfks`
-* tls.crt: can be extracted from an existing namespance NS as `oc extract secret/certificates -n NS --keys tls.crt --confirm --to tls`
-* tls.key: can be extracted from an existing namespance NS as `oc extract secret/certificates -n NS --keys tls.key --confirm --to tls`
+* tls.crt: can be extracted from an existing Keycloak namespance NS as `oc extract secret/certificates -n NS --keys tls.crt --confirm --to tls`
+* tls.key: can be extracted from an existing Keycloak namespance NS as `oc extract secret/certificates -n NS --keys tls.key --confirm --to tls`
 
 ## Testing options
 All options are based on a custom image `quay.io/dmartino/ubi9-jdk17-git` including OpenJDK17, git and vim.
@@ -60,7 +60,10 @@ chmod +x run.sh
 Start a Pod with the development environment, clone the source from git and link the TLS resources in a Secret.
 
 ```bash
-oc create secret generic fips-email-tls --from-file tls.crt=tls.crt --from-file tls.key=tls/tls.key --from-file cacerts.bcfks=tls/cacerts.bcfks --from-literal TRUSTSTORE_PWD=YOUR_TRUSTSTORE_PWD
+oc create secret generic fips-email-tls --from-file tls.crt=tls/tls.crt \
+	--from-file tls.key=tls/tls.key \
+	--from-file cacerts.bcfks=tls/cacerts.bcfks \
+	--from-literal TRUSTSTORE_PWD=YOUR_TRUSTSTORE_PWD
 oc apply -f ocp/Deployment-mounted-tls.yaml
 oc wait --for=condition=Ready pod -l app=test-fips-email
 export PODNAME=$(oc get pods -l app=test-fips-email --no-headers -o custom-columns=:metadata.name)
@@ -78,7 +81,7 @@ ln -s /home/default/tls .
 ./run.sh SMTP_USER SMTP_PWD TRUSTSTORE_PWD EMAIL
 ```
 
-To rebuild the image run this command and update the [Deployment-jdk17-git.yaml](./ocp/Deployment-jdk17-git.yaml) configuration:
+To rebuild the image run this command and update the deployment configurations in `ocp` folder.
 ```bash
 docker build -t quay.io/YOUR_USER/ubi9-jdk17-git:latest docker
 ```
