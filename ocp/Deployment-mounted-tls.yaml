@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-fips-email
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-fips-email
+  template:
+    metadata:
+      labels:
+        app: test-fips-email
+    spec:
+      containers:
+        - name: openjdk-container
+          image: quay.io/dmartino/ubi9-jdk17-git:latest
+          imagePullPolicy: Always
+          env:
+            - name: TRUSTSTORE_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: fips-email-tls
+                  key: TRUSTSTORE_PWD
+          command: [ "sleep" ]
+          args: [ "infinity" ]
+          resources:
+            limits:
+              cpu: "500m" # 500 milliCPU (0.5 CPU)
+              memory: "1Gi" # 1 Gibibyte
+          volumeMounts:
+          - name: tls-volume
+            mountPath: /home/default/tls
+      volumes:
+      - name: tls-volume
+        secret:
+          secretName: fips-email-tls
+              
+              
+          
+

@@ -27,11 +27,14 @@ Install the required TLS resources in `tls` folder:
 * tls.crt: can be extracted from an existing namespance NS as `oc extract secret/certificates -n NS --keys tls.crt --confirm --to tls`
 * tls.key: can be extracted from an existing namespance NS as `oc extract secret/certificates -n NS --keys tls.key --confirm --to tls`
 
-## Option 1 - Running on Pod
-Start a Pod with minimal development environment, copy the necessary resources and test it.
+## Testing options
+All options are based on a custom image `quay.io/dmartino/ubi9-jdk17-git` including OpenJDK17, git and vim.
+
+## Option 1 - Copy source code on the Pod
+Start a Pod with development environment, copy the necessary resources and test it.
 
 ```bash
-oc apply -f docker/Deployment-jdk11.yaml
+oc apply -f ocp/Deployment.yaml
 oc wait --for=condition=Ready pod -l app=test-fips-email
 export PODNAME=$(oc get pods -l app=test-fips-email --no-headers -o custom-columns=:metadata.name)
 
@@ -53,14 +56,29 @@ chmod +x run.sh
 ./run.sh SMTP_USER SMTP_PWD TRUSTSTORE_PWD EMAIL
 ```
 
-## Option 2
+## Option 2 - Clone the repo and mount the TLS resources
+Start a Pod with the development environment, clone the source from git and link the TLS resources in a Secret.
+
+```bash
+oc create secret generic fips-email-tls --from-file tls.crt=tls.crt --from-file tls.key=tls/tls.key --from-file cacerts.bcfks=tls/cacerts.bcfks --from-literal TRUSTSTORE_PWD=YOUR_TRUSTSTORE_PWD
+oc apply -f ocp/Deployment-mounted-tls.yaml
+oc wait --for=condition=Ready pod -l app=test-fips-email
+export PODNAME=$(oc get pods -l app=test-fips-email --no-headers -o custom-columns=:metadata.name)
+
+oc rsh ${PODNAME}
+```
+
+Clone the git repo in the pod, link to the mounted TLS resources and run it:
 
 ``
 git clone https://github.com/dmartinol/test-fips-email.git
 cd test-fips-email
-
+rm -rf tls
+ln -s /home/default/tls .
+./run.sh SMTP_USER SMTP_PWD TRUSTSTORE_PWD EMAIL
 ```
 
+To rebuild the image run this command and update the [Deployment-jdk17-git.yaml](./ocp/Deployment-jdk17-git.yaml) configuration:
 ```bash
 docker build -t quay.io/YOUR_USER/ubi9-jdk17-git:latest docker
 ```
