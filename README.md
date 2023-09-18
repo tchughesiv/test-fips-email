@@ -83,5 +83,6 @@ ln -s /home/default/tls .
 
 To rebuild the image run this command and update the deployment configurations in `ocp` folder.
 ```bash
-docker build -t quay.io/YOUR_USER/ubi9-jdk17-git:latest docker
+docker build -f docker/Dockerfile -t quay.io/YOUR_USER/ubi9-jdk17-git:latest .
+
 ```

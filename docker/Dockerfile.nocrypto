@@ -15,12 +15,4 @@ COPY pom.xml .
 COPY run.sh .
 RUN mvn clean install
 
-USER 0
-RUN echo "cipher@TLS = AES-128-CBC+" > /etc/crypto-policies/policies/modules/AWS-FIPS.pmod
-RUN echo "key_exchange = RSA+" >> /etc/crypto-policies/policies/modules/AWS-FIPS.pmod
-RUN update-crypto-policies --set FIPS:AWS-FIPS
-USER 185
-RUN cat /etc/crypto-policies/state/CURRENT.pol
-RUN ls -la /etc/crypto-policies/
-
 CMD [ "bash" ]
