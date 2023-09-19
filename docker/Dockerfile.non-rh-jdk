@@ -1,0 +1,18 @@
+FROM docker.io/maven:3-openjdk-17
+
+#USER root
+#RUN microdnf install -y git vim-enhanced && \
+#    microdnf clean all
+
+
+#RUN git --version
+RUN mkdir test-fips
+WORKDIR /test-fips
+RUN pwd
+COPY tls tls
+COPY src src
+COPY pom.xml .
+COPY run.sh .
+RUN mvn clean install
+
+CMD [ "bash" ]
